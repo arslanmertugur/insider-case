@@ -1,19 +1,32 @@
 version: '3.8'
+
 services:
   app:
     image: richarvey/nginx-php-fpm:latest
+    container_name: insider_case_app
+    volumes:
       - .:/var/www/html
     ports:
       - "8080:80"
     environment:
       - WEBROOT=/var/www/html/public
+      - APP_NAME=${APP_NAME:-Laravel}
       - APP_ENV=local
       - APP_KEY=base64:z7bfuSlDqfPDoM1th6lH/NrVxGMl8ALVww9EY25Hok4=
-    links:
-      - db
-  db:
-    image: mariadb:10.6
-    environment:
-      - WEBROOT=/var/www/html/public
-    env_file:
-      - .env
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8080
+
+      - DB_CONNECTION=pgsql
+      - DB_HOST=34.106.124.106
+      - DB_PORT=5432
+      - DB_DATABASE=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=Q&=8GzK{HPFVsasJ
+
+      - SESSION_DRIVER=database
+      - CACHE_STORE=database
+      - QUEUE_CONNECTION=database
+
+      - RUN_SCRIPTS=1
+      - SKIP_COMPOSER=0
+      - PHP_ERRORS_STDERR=1
