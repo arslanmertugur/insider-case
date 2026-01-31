@@ -504,7 +504,7 @@ class LeagueService
     {
         $teams = GroupTeam::with('team')->where('group_id', $groupId)->get();
 
-        if ($teams->max('played') < 2) {
+        if ($teams->max('played') < 4) {
             GroupTeam::where('group_id', $groupId)->update(['guess' => 0]);
             return;
         }

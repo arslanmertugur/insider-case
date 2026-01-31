@@ -95,7 +95,7 @@
                     <th class="w-[10%] py-5 text-center text-red-400">L</th>
                     <th class="w-[10%] py-5 text-center">GD</th>
                     <th class="w-[10%] py-5 text-center text-[#fbbf24]">Pts</th>
-                    <th class="w-[20%] py-5 text-center text-[#fbbf24] italic tracking-widest">Prediction</th>
+                    <th v-if="hasAnyPredictions" class="w-[20%] py-5 text-center text-[#fbbf24] italic tracking-widest">Prediction</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
@@ -123,7 +123,7 @@
                       </td>
                       <td class="py-5 text-center font-black text-[#fbbf24] text-xl">{{ team.points }}</td>
                       
-                      <td class="py-5 px-4">
+                      <td v-if="hasAnyPredictions" class="py-5 px-4">
                         <div v-if="team.guess > 0" class="flex flex-col items-center gap-1.5 animate-in fade-in zoom-in duration-700">
                           <div class="flex items-center gap-1.5">
                             <span v-if="team.guess >= 50" class="text-[10px] animate-pulse">🏆</span>
@@ -228,6 +228,11 @@ const swalConfig = {
 
 const sortedGroupKeys = computed(() => {
   return Object.keys(allGroups.value).sort();
+});
+
+const hasAnyPredictions = computed(() => {
+  const teams = allGroups.value[activeGroup.value] || [];
+  return teams.some(team => team.guess > 0);
 });
 
 const getMatchesByGroup = (groupName) => {

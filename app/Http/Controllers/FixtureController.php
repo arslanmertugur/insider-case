@@ -64,6 +64,7 @@ class FixtureController extends Controller
                     'drawn' => (int) $gt->drawn,
                     'lost' => (int) $gt->lost,
                     'goal_difference' => (int) $gt->goal_difference,
+                    'guess' => (int) $gt->guess,
                 ];
             })->sortByDesc('points')
                 ->values(); // Sıralamayı koru ve array'e çevir
@@ -138,7 +139,7 @@ class FixtureController extends Controller
                 'goals_against' => 0,
                 'goal_difference' => 0,
                 'points' => 0,
-                'guess' =>0
+                'guess' => 0
             ]);
 
             DB::commit();
