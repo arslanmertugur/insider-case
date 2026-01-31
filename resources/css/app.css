@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@source "../**/*.vue";
+@source "../**/*.js";
+@source "../../resources/views/**/*.blade.php";
+
+@theme {
+    --font-sans: "Instrument Sans", sans-serif;
+
+    /* ANA ZITLIK: Gece Mavisi vs. Enerjik Kehribar */
+    --color-base-dark: #020617;
+    /* Çok Koyu Lacivert (Soğuk) */
+    --color-accent-vibrant: #fbbf24;
+    /* Amber/Sarı (Sıcak - Zıt Renk) */
+
+    /* YARDIMCI RENKLER */
+    --color-surface-soft: #1e293b;
+    /* Kartlar için yumuşak gri-mavi */
+    --color-action-blue: #3b82f6;
+    /* Interaktif elemanlar için parlak mavi */
+    --color-danger: #ef4444;
+    /* Mağlubiyet/Hata */
+    --color-success: #22c55e;
+    /* Galibiyet/Başarı */
+}
+
+@layer base {
+    body {
+        /* Arka planı koyu tutup, aksanları parlatacağız */
+        background-color: var(--color-base-dark);
+        color: #f8fafc;
+        min-height: 100vh;
+    }
+
+    button {
+        @apply transition-transform duration-150 active:scale-95;
+    }
+}
+
+/* Zıtlık Efekti: Koyu zemin üzerinde parlayan altın dokunuşu */
+@utility accent-border {
+    border: 2px solid var(--color-accent-vibrant);
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+}
+
+@utility glass-dark {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #fbbf2433;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #fbbf2466;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}

@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  app:
+    image: richarvey/nginx-php-fpm:latest
+      - .:/var/www/html
+    ports:
+      - "8080:80"
+    environment:
+      - WEBROOT=/var/www/html/public
+      - APP_ENV=local
+      - APP_KEY=base64:z7bfuSlDqfPDoM1th6lH/NrVxGMl8ALVww9EY25Hok4=
+    links:
+      - db
+  db:
+    image: mariadb:10.6
+    environment:
+      - WEBROOT=/var/www/html/public
+    env_file:
+      - .env
