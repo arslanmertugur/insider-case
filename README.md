@@ -5,6 +5,7 @@ Elite European football tournament simulator built with **Laravel 11** and **Vue
 ![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?style=for-the-badge&logo=laravel)
 ![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vue.js)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Cloud-4169E1?style=for-the-badge&logo=postgresql)
 
 ## 🚀 Features
 
@@ -19,44 +20,41 @@ Elite European football tournament simulator built with **Laravel 11** and **Vue
 
 -   **Backend:** PHP 8.2+ / Laravel 11
 -   **Frontend:** Vue.js 3 (Composition API)
--   **Styling:** Tailwind CSS / Headless UI
--   **Database:** MySQL / PostgreSQL
--   **State Management:** Reactive Vue composition
+-   **Database:** PostgreSQL (Hosted on Google Cloud Platform)
+-   **Infrastructure:** Docker & Docker Compose
 
-## 📦 Installation
+## 🐳 Docker Quick Start (Recommended)
 
-1.  **Clone the repository:**
-    ```bash
+This project is Dockerized to provide a "plug-and-play" experience.
+
+1.  **Clone & Build Assets:**
+    ```powershell
     git clone [https://github.com/arslanmertugur/insider-case.git](https://github.com/arslanmertugur/insider-case.git)
     cd insider-case
-    ```
-
-2.  **Install PHP dependencies:**
-    ```bash
-    composer install
-    ```
-
-3.  **Install Frontend dependencies:**
-    ```bash
     npm install
-    npm run dev
+    npm run build
     ```
 
-4.  **Environment Setup:**
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
+2.  **Run Containers:**
+    ```powershell
+    docker-compose up -d
     ```
 
-5.  **Database Migration & Seeding:**
-    ```bash
-    php artisan migrate --seed
+3.  **Setup Database:**
+    ```powershell
+    docker exec -it insider_case_app composer install
+    docker exec -it insider_case_app php artisan migrate --seed
     ```
 
-6.  **Run the Server:**
-    ```bash
-    php artisan serve
-    ```
+4.  **Access:** Open [http://localhost:8080](http://localhost:8080)
+
+## 🔒 Security & Environment Note
+
+> **Important:** The `.env` file is intentionally included in this repository for this case study. It contains connection strings for a **GCP PostgreSQL** instance. 
+> 
+> - **Reviewer Convenience:** This allows for immediate testing without local database setup.
+> - **Safety:** The database is protected via GCP IP Whitelisting and restricted user roles.
+> - **Production Note:** In a real production scenario, environment variables are never committed to version control and are managed via secret management services.
 
 ## 🧠 Simulation Logic
 
