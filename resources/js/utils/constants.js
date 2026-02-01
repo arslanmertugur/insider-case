@@ -1,6 +1,4 @@
-/**
- * UI Constants and Configuration
- */
+
 
 export const ANIMATION_DELAYS = {
     SIMULATION_START: 1500,

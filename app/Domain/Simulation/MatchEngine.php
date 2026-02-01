@@ -12,14 +12,17 @@ class MatchEngine
         $homeForm = $this->getFormBonus($groupTeams, $groupId, $home->id);
         $awayForm = $this->getFormBonus($groupTeams, $groupId, $away->id);
 
-        $homeAttackRating = ($home->attack * 0.6) + ($home->power * 0.6) + ($home->supporter * 0.1) + ($homeForm * 2);
-        $awayAttackRating = ($away->attack * 0.6) + ($away->power * 0.6) + ($awayForm * 2);
+        
+        $homeAttackRating = ($home->attack * 0.8) + ($home->power * 0.8) + ($home->supporter * 0.1) + ($homeForm * 1);
+        $awayAttackRating = ($away->attack * 0.8) + ($away->power * 0.8) + ($awayForm * 1);
 
-        $homeDefenseRating = ($home->defense * 0.7) + ($home->goalkeeper * 0.3) + 5;
-        $awayDefenseRating = ($away->defense * 0.7) + ($away->goalkeeper * 0.2);
+        
+        $homeDefenseRating = ($home->defense * 0.9) + ($home->goalkeeper * 0.4) + 5;
+        $awayDefenseRating = ($away->defense * 0.9) + ($away->goalkeeper * 0.3);
 
-        $homeXG = ($homeAttackRating / max(1, $awayDefenseRating)) * 1.4;
-        $awayXG = ($awayAttackRating / max(1, $homeDefenseRating)) * 1.2;
+        
+        $homeXG = ($homeAttackRating / max(1, $awayDefenseRating)) * 1.5;
+        $awayXG = ($awayAttackRating / max(1, $homeDefenseRating)) * 1.3;
 
         $homeGoals = $this->generateRealisticGoals($homeXG);
         $awayGoals = $this->generateRealisticGoals($awayXG);
@@ -32,7 +35,9 @@ class MatchEngine
         $goals = 0;
 
         while (true) {
-            $probability = $xg / ($goals + 1.5);
+            
+            
+            $probability = $xg / ($goals + 1.2);
 
             if ((rand(0, 1000) / 1000) < $probability) {
                 $goals++;
@@ -49,14 +54,14 @@ class MatchEngine
 
     private function getFormBonus(Collection $groupTeams, string|int $groupId, string|int $teamId): float
     {
-        // Handle both Collection structure (from memory) and DB Models
+        
         if (isset($groupTeams[$teamId])) {
-            // If it's grouped by team_id
+            
             $teamStats = $groupTeams[$teamId] instanceof Collection
                 ? $groupTeams[$teamId]->firstWhere('group_id', $groupId)
                 : $groupTeams[$teamId];
         } else {
-            // If it's a flat collection
+            
             $teamStats = $groupTeams->firstWhere('team_id', $teamId);
         }
 

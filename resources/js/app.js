@@ -1,7 +1,7 @@
 import './bootstrap';
-import { createApp } from 'vue/dist/vue.esm-bundler'; // Bu import şekli daha garantidir
+import { createApp } from 'vue/dist/vue.esm-bundler'; 
 import LeagueSimulation from './components/league/LeagueSimulation.vue';
-import '../css/app.css'; // Bu satırın olduğundan emin ol
+import '../css/app.css'; 
 const app = createApp({});
 
 app.component('league-simulation', LeagueSimulation);

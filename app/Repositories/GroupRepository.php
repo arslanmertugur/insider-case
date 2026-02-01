@@ -6,6 +6,7 @@ use App\Models\Group;
 use App\Models\GroupTeam;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class GroupRepository
 {
@@ -38,9 +39,9 @@ class GroupRepository
 
     public function clearGroupAssignments(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         GroupTeam::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
     }
 
     public function saveGroupAssignments(array $bulkData): void

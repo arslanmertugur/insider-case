@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LeagueServiceTest extends TestCase
 {
-    use RefreshDatabase; // Her testte DB'yi temizler
+    use RefreshDatabase; 
 
     private LeagueService $service;
 
@@ -19,10 +19,10 @@ class LeagueServiceTest extends TestCase
         $this->service = new LeagueService();
     }
 
-/** @test */
+
 public function it_calculates_match_results_consistently()
 {
-    // 1. Güçlü ve Zayıf Takım Oluştur
+    
     $strongTeam = Team::factory()->create(['power' => 95, 'attack' => 95, 'defense' => 90, 'goalkeeper' => 90]);
     $weakTeam = Team::factory()->create(['power' => 40, 'attack' => 40, 'defense' => 30, 'goalkeeper' => 30]);
 
@@ -35,23 +35,23 @@ public function it_calculates_match_results_consistently()
     $match->setRelation('homeTeam', $strongTeam);
     $match->setRelation('awayTeam', $weakTeam);
 
-    // --- Private Metoda Erişim (Reflection) ---
-    $method = new \ReflectionMethod(LeagueService::class, 'calculateMatchResult');
-    $method->setAccessible(true); // Private erişim engelini kaldırıyoruz
     
-    // Metodu çağır (2. parametre olan groupTeams koleksiyonunu boş gönderiyoruz)
+    $method = new \ReflectionMethod(LeagueService::class, 'calculateMatchResult');
+    $method->setAccessible(true); 
+    
+    
     $result = $method->invoke($this->service, $match, collect());
 
-    // 3. Kontrol
+    
     $this->assertArrayHasKey('home_goals', $result);
     $this->assertArrayHasKey('away_goals', $result);
     $this->assertGreaterThanOrEqual(0, $result['home_goals']);
 }
 
-    /** @test */
+    
     public function it_updates_points_correctly_after_a_win()
     {
-        // 1. Verileri hazırla
+        
         $team = Team::factory()->create();
         $groupTeam = \App\Models\GroupTeam::create([
             'group_id' => 1,
@@ -68,7 +68,7 @@ public function it_calculates_match_results_consistently()
         $method->setAccessible(true);
         $method->invoke($this->service, $groupTeams, 1, $team->id, 3, 1);
 
-        // 3. Sonuçları doğrula
+        
         $updatedStat = $groupTeams[$team->id]->first();
         
         $this->assertEquals(3, $updatedStat->points, "Galibiyet sonrası puan 3 olmalı.");

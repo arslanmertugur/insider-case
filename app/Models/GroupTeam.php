@@ -27,7 +27,7 @@ class GroupTeam extends Model
         'guess'
     ];
 
-    // Integer olarak cast et
+    
     protected $casts = [
         'played' => 'integer',
         'won' => 'integer',

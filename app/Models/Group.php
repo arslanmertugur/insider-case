@@ -16,13 +16,13 @@ class Group extends Model
 
     protected $fillable = ['name'];
 
-    // GroupTeam pivot tablosu üzerinden
+    
     public function groupTeams(): HasMany
     {
         return $this->hasMany(GroupTeam::class, 'group_id');
     }
 
-    // Direkt takımlar (belongsToMany ile)
+    
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'group_teams')
@@ -32,7 +32,7 @@ class Group extends Model
             ->orderByPivot('goal_difference', 'desc');
     }
 
-    // Grubun maçları
+    
     public function matches(): HasMany
     {
         return $this->hasMany(Fixture::class, 'group_id');

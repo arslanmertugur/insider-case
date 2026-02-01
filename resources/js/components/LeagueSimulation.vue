@@ -210,7 +210,7 @@ const isSimulating = ref(false);
 const isLoading = ref(true); 
 const simulatingMatches = ref([]);
 
-// --- Tasarım Konfigürasyonu ---
+
 const swalConfig = {
   background: '#1e293b',
   color: '#f1f5f9',

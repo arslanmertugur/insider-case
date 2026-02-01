@@ -26,7 +26,7 @@ class Team extends Model
         'supporter'
     ];
 
-    // Integer olarak cast et
+    
     protected $casts = [
         'pot' => 'integer',
         'power' => 'integer',
@@ -36,17 +36,13 @@ class Team extends Model
         'supporter' => 'integer',
     ];
 
-    /**
-     * Takımın gruptaki istatistikleri (Puan durumu satırı)
-     */
+    
     public function groupStats(): HasOne
     {
         return $this->hasOne(GroupTeam::class, 'team_id');
     }
 
-    /**
-     * Takımın bulunduğu gruplar
-     */
+    
     public function groups(): BelongsToMany
     {
         return $this->belongsToMany(Group::class, 'group_teams')
@@ -55,20 +51,16 @@ class Team extends Model
     }
     public function groupTeams()
     {
-        // Bir takımın bir gruptaki istatistiklerine erişim
+        
         return $this->hasMany(GroupTeam::class, 'team_id');
     }
-    /**
-     * Takımın ev sahibi olduğu fikstürler
-     */
+    
     public function homeFixtures(): HasMany
     {
         return $this->hasMany(Fixture::class, 'home_team_id');
     }
 
-    /**
-     * Takımın deplasman olduğu fikstürler
-     */
+    
     public function awayFixtures(): HasMany
     {
         return $this->hasMany(Fixture::class, 'away_team_id');

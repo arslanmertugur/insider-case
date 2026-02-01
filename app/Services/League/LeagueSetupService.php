@@ -70,7 +70,7 @@ class LeagueSetupService
         });
     }
 
-    // --- Private Draw Logic ---
+    
 
     private function validateDrawPreconditions(Collection $allTeams, Collection $groups): void
     {
@@ -81,7 +81,7 @@ class LeagueSetupService
         if ($allTeams->count() !== $expectedTeamCount)
             throw new \Exception("Takım sayısı hatalı.");
 
-        // Check country constraints
+        
         $countryCounts = $allTeams->groupBy('country')->map->count();
         foreach ($countryCounts as $country => $count) {
             if ($count > $groupCount) {
@@ -151,18 +151,18 @@ class LeagueSetupService
             if (count($assignments[$groupName]) >= self::TEAMS_PER_GROUP)
                 continue;
 
-            // Check Pot Conflict
+            
             foreach ($assignments[$groupName] as $existingTeamId) {
                 $existingTeam = $allTeams->firstWhere('id', $existingTeamId);
                 if ($existingTeam && $existingTeam->pot === $team->pot)
-                    continue 2; // Skip group
+                    continue 2; 
             }
 
-            // Check Country Conflict
+            
             foreach ($assignments[$groupName] as $existingTeamId) {
                 $existingTeam = $allTeams->firstWhere('id', $existingTeamId);
                 if ($existingTeam && $existingTeam->country === $team->country)
-                    continue 2; // Skip group
+                    continue 2; 
             }
 
             $validGroups[] = $groupName;

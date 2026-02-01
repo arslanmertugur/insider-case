@@ -42,7 +42,7 @@ class MatchService
 
         return DB::transaction(function () use ($matches, $nextWeek, $groupTeams) {
             foreach ($matches as $match) {
-                // Simulate
+                
                 $result = $this->matchEngine->simulateMatch(
                     $match->homeTeam,
                     $match->awayTeam,
@@ -50,26 +50,27 @@ class MatchService
                     $match->group_id
                 );
 
-                // Update Match Object
+                
                 $match->home_goals = $result['home_goals'];
                 $match->away_goals = $result['away_goals'];
                 $match->played = true;
                 $match->save();
 
-                // Process Stats InMemory
+                
                 $this->processStatsInMemory($groupTeams, $match->group_id, $match->home_team_id, $result['home_goals'], $result['away_goals']);
                 $this->processStatsInMemory($groupTeams, $match->group_id, $match->away_team_id, $result['away_goals'], $result['home_goals']);
             }
 
-            // Upsert Stats
-            $this->saveStats($groupTeams);
-
-            // Calculate Predictions
-            // Optimization: Only calculate for affected groups
+            
             $groupIds = $matches->pluck('group_id')->unique();
+
             foreach ($groupIds as $groupId) {
-                $this->predictionService->calculatePredictions($groupId);
+                
+                $this->predictionService->calculatePredictionsInMemory($groupTeams, $groupId);
             }
+
+            
+            $this->saveStats($groupTeams);
 
             return [
                 'played_week' => $nextWeek,
@@ -96,7 +97,7 @@ class MatchService
             $teamIds = [$match->home_team_id, $match->away_team_id];
             $groupTeams = $this->groupRepository->getGroupTeamsByTeamIds($teamIds)->groupBy('team_id');
 
-            // Simulate
+            
             $result = $this->matchEngine->simulateMatch(
                 $match->homeTeam,
                 $match->awayTeam,
@@ -104,31 +105,35 @@ class MatchService
                 $match->group_id
             );
 
-            // Update Match
+            
             $match->home_goals = $result['home_goals'];
             $match->away_goals = $result['away_goals'];
             $match->played = true;
             $match->save();
 
-            // Process Stats
+            
             $this->processStatsInMemory($groupTeams, $match->group_id, $match->home_team_id, $result['home_goals'], $result['away_goals']);
             $this->processStatsInMemory($groupTeams, $match->group_id, $match->away_team_id, $result['away_goals'], $result['home_goals']);
 
-            // Save Stats
+            
             $this->saveStats($groupTeams);
 
-            // Check if last match
+            
             $remainingMatches = $this->fixtureRepository->countRemainingMatchesInWeek($currentWeek);
             $isLastMatch = $remainingMatches === 0;
 
             if ($isLastMatch) {
-                // Optimization: We could only calculate for all groups if week changes, 
-                // but here we might just calculate for ALL groups like the original code did, 
-                // or just the match's group if we want. The original code calculated for ALL groups at end of week.
-                $allGroups = \App\Models\Group::all();
-                foreach ($allGroups as $group) {
-                    $this->predictionService->calculatePredictions($group->id);
+                
+                
+                $allGroupTeams = \App\Models\GroupTeam::with('team')->get();
+                $groupedByGroup = $allGroupTeams->groupBy('group_id');
+
+                foreach ($groupedByGroup as $groupId => $teams) {
+                    $this->predictionService->calculatePredictionsInMemory($teams, $groupId);
                 }
+
+                $allGroupTeamsGrouped = $allGroupTeams->groupBy('team_id');
+                $this->saveStats($allGroupTeamsGrouped);
             }
 
             return [
@@ -168,10 +173,10 @@ class MatchService
             $match->played = true;
             $match->save();
 
-            // Reset group stats
+            
             $this->groupRepository->resetGroupStats($match->group_id);
 
-            // Replay all played matches in this group
+            
             $playedMatches = $this->fixtureRepository->getPlayedMatchesByGroup($match->group_id);
             $groupTeams = $this->groupRepository->getGroupTeamsByTeamIds(
                 \App\Models\GroupTeam::where('group_id', $match->group_id)->pluck('team_id')->toArray()
@@ -203,7 +208,7 @@ class MatchService
             $gt->goals_for += $gf;
             $gt->goals_against += $ga;
             $gt->goal_difference = $gt->goals_for - $gt->goals_against;
-            $gt->form = substr($gt->form . ($isWin ? 'W' : ($isDraw ? 'D' : 'L')), -5);
+            $gt->form = substr(($gt->form ?? '') . ($isWin ? 'W' : ($isDraw ? 'D' : 'L')), -5);
         }
     }
 
@@ -212,7 +217,8 @@ class MatchService
         $upsertData = [];
         foreach ($groupTeams as $collection) {
             foreach ($collection as $gt) {
-                $upsertData[] = $gt->toArray();
+                
+                $upsertData[] = $gt->attributesToArray();
             }
         }
         $this->groupRepository->upsertGroupTeams($upsertData, ['id'], [
@@ -224,7 +230,8 @@ class MatchService
             'goals_for',
             'goals_against',
             'goal_difference',
-            'form'
+            'form',
+            'guess'
         ]);
     }
 }

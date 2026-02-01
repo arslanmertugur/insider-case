@@ -79,7 +79,7 @@ import StandingsTable from './StandingsTable.vue';
 import FixturesList from './FixturesList.vue';
 import ControlPanel from './ControlPanel.vue';
 
-// Composables
+
 const leagueData = useLeagueData();
 const { 
   allGroups, 
@@ -103,7 +103,7 @@ const {
 
 const { showConfirmDialog, showSuccessToast, showLoadingDialog, closeDialog } = useNotifications();
 
-// Actions
+
 const handleDrawAndGenerate = async () => {
   const result = await showConfirmDialog({
     title: '🏆 Draw Groups?',

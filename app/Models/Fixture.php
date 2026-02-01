@@ -26,7 +26,7 @@ class Fixture extends Model
         'played'
     ];
 
-    // Cast'leri ekle
+    
     protected $casts = [
         'week' => 'integer',
         'home_goals' => 'integer',
