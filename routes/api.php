@@ -10,6 +10,7 @@ Route::post('/fixtures', [FixtureController::class, 'generate']);
 
 
 Route::post('/play-next-week', [FixtureController::class, 'playNextWeek']);
+Route::post('/play-next-match', [FixtureController::class, 'playNextMatch']);
 Route::get('/fixtures/all', [FixtureController::class, 'getAllFixtures']);
 Route::post('/play-all', [FixtureController::class, 'playAll']);
 Route::get('/predictions', [FixtureController::class, 'getPredictions']);

@@ -33,42 +33,70 @@ export function useSimulation(leagueData) {
         if (currentWeek.value >= 6) return;
 
         try {
+            isSimulating.value = true;
             const nextWeekNum = currentWeek.value + 1;
-            let weekMatches = [];
 
-            // Collect all matches for the next week across all groups
+            // 1. Pre-fill simulatingMatches with unplayed matches
+            let weekMatches = [];
             sortedGroupKeys.value.forEach(group => {
+                // Get matches for next week
+                // Note: groupFixtures structure is { GroupName: { WeekNum: [matches] } }
                 const matches = groupFixtures.value[group][nextWeekNum] || [];
                 matches.forEach(m => {
-                    weekMatches.push({ ...m, revealed: false, groupLabel: group });
+                    // Start as unrevealed
+                    weekMatches.push({
+                        ...m,
+                        revealed: false,
+                        groupLabel: group,
+                        home_goals: '?',
+                        away_goals: '?'
+                    });
                 });
             });
 
             simulatingMatches.value = weekMatches;
             isSimulating.value = true;
 
-            // Wait before calling API
+            // Wait before starting
             await new Promise(resolve => setTimeout(resolve, ANIMATION_DELAYS.SIMULATION_START));
-            await leagueApi.playNextWeek();
 
-            // Fetch updated data
-            await fetchAllData(false);
+            let isWeekComplete = false;
 
-            // Get updated matches with results
-            let updatedMatches = [];
-            sortedGroupKeys.value.forEach(group => {
-                const matches = groupFixtures.value[group][currentWeek.value] || [];
-                matches.forEach(m => {
-                    updatedMatches.push({ ...m, revealed: false, groupLabel: group });
-                });
-            });
-            simulatingMatches.value = updatedMatches;
+            // Keep calling playNextMatch until the week is complete
+            while (!isWeekComplete) {
+                // Play match in backend
+                const result = await leagueApi.playNextMatch();
 
-            // Reveal matches one by one
-            for (let i = 0; i < simulatingMatches.value.length; i++) {
-                await new Promise(resolve => setTimeout(resolve, ANIMATION_DELAYS.MATCH_REVEAL));
-                simulatingMatches.value[i].revealed = true;
+                // Find this match in our local state and update it
+                const matchIndex = simulatingMatches.value.findIndex(m => m.id === result.match.id);
+
+                if (matchIndex !== -1) {
+                    // Update with results and visual flair
+                    simulatingMatches.value[matchIndex] = {
+                        ...simulatingMatches.value[matchIndex],
+                        ...result.match, // This contains home_goals, away_goals
+                        revealed: true
+                    };
+                } else {
+                    // Fallback if not found (shouldn't happen if pre-fill works)
+                    simulatingMatches.value.push({
+                        ...result.match,
+                        revealed: true,
+                        groupLabel: result.match.group
+                    });
+                }
+
+                // Check if this was the last match of the week
+                isWeekComplete = result.is_last_match;
+
+                // Wait before showing next match (unless it's the last one)
+                if (!isWeekComplete) {
+                    await new Promise(resolve => setTimeout(resolve, ANIMATION_DELAYS.MATCH_REVEAL));
+                }
             }
+
+            // Fetch updated data after all matches are complete
+            await fetchAllData(false);
 
             // Wait before closing
             await new Promise(resolve => setTimeout(resolve, ANIMATION_DELAYS.SIMULATION_END));

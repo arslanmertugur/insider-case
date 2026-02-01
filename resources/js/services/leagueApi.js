@@ -49,6 +49,14 @@ export const leagueApi = {
     },
 
     /**
+     * Play the next single match
+     */
+    async playNextMatch() {
+        const response = await axios.post(`${API_BASE}/play-next-match`);
+        return response.data;
+    },
+
+    /**
      * Simulate all remaining weeks
      */
     async playAllWeeks() {
