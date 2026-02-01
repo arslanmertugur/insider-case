@@ -33,7 +33,7 @@ class FixtureController extends Controller
     {
         try {
             $data = $this->leagueSetupService->generateFixtures();
-            
+
             $formatted = $data->map(function ($weekMatches, $week) {
                 return [
                     'week' => $week,
@@ -63,11 +63,11 @@ class FixtureController extends Controller
         try {
             $data = $this->matchService->playNextWeek();
 
-            
+
             $formattedResults = $data['results']->map(function ($match) {
                 return [
                     'id' => $match->id,
-                    'group' => $match->group->name, 
+                    'group' => $match->group->name,
                     'day' => $match->match_day,
                     'home_team' => $match->homeTeam->name,
                     'away_team' => $match->awayTeam->name,
@@ -106,7 +106,7 @@ class FixtureController extends Controller
 
     public function index()
     {
-        
+
         $groups = $this->groupRepository->getGroupsForStandings();
 
         $grouped = $groups->mapWithKeys(function ($group) {
@@ -126,27 +126,29 @@ class FixtureController extends Controller
             ];
         });
 
-        
-        
-        
-        
-        
 
-        
-        
-        
+
+
+
+
+
+
+
+
 
         return response()->json($grouped);
     }
 
-
     public function playAll(): JsonResponse
     {
+        // Tüm sezon simülasyonu için zaman limiti artır
+        set_time_limit(120);
+
         $this->matchService->playAllWeeks();
-        
-        
-        
-        
+
+
+
+
         return response()->json(['message' => 'Simulated all weeks']);
     }
 
@@ -163,24 +165,24 @@ class FixtureController extends Controller
 
     public function getAllFixtures()
     {
-        
+
         $groupedByWeek = $this->fixtureRepository->getFixturesGroupedByWeek();
 
-        
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
         $fixtures = \App\Models\Fixture::with(['homeTeam', 'awayTeam', 'group'])->get();
-        
 
-        
-        
 
-        
+
+
+
+
 
         $grouped = $fixtures->groupBy(function ($item) {
             return $item->group->name ?? 'Unknown';

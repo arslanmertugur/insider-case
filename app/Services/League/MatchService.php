@@ -29,8 +29,6 @@ class MatchService
 
     public function playNextWeek(): array
     {
-        set_time_limit(120);
-
         $nextWeek = $this->fixtureRepository->getNextUnplayedWeek();
         if (is_null($nextWeek)) {
             throw new \Exception("Oynanacak hafta kalmadı.");
@@ -42,7 +40,7 @@ class MatchService
 
         return DB::transaction(function () use ($matches, $nextWeek, $groupTeams) {
             foreach ($matches as $match) {
-                
+
                 $result = $this->matchEngine->simulateMatch(
                     $match->homeTeam,
                     $match->awayTeam,
@@ -50,26 +48,20 @@ class MatchService
                     $match->group_id
                 );
 
-                
+
                 $match->home_goals = $result['home_goals'];
                 $match->away_goals = $result['away_goals'];
                 $match->played = true;
                 $match->save();
 
-                
+
                 $this->processStatsInMemory($groupTeams, $match->group_id, $match->home_team_id, $result['home_goals'], $result['away_goals']);
                 $this->processStatsInMemory($groupTeams, $match->group_id, $match->away_team_id, $result['away_goals'], $result['home_goals']);
             }
 
-            
-            $groupIds = $matches->pluck('group_id')->unique();
+            // Tahminler sadece hafta bittiğinde hesaplanmalı
+            // playNextMatch içinde zaten yapılıyor, burada gereksiz
 
-            foreach ($groupIds as $groupId) {
-                
-                $this->predictionService->calculatePredictionsInMemory($groupTeams, $groupId);
-            }
-
-            
             $this->saveStats($groupTeams);
 
             return [
@@ -81,8 +73,6 @@ class MatchService
 
     public function playNextMatch(): array
     {
-        set_time_limit(120);
-
         $currentWeek = $this->fixtureRepository->getNextUnplayedWeek();
         if (is_null($currentWeek)) {
             throw new \Exception("Oynanacak maç kalmadı.");
@@ -97,7 +87,7 @@ class MatchService
             $teamIds = [$match->home_team_id, $match->away_team_id];
             $groupTeams = $this->groupRepository->getGroupTeamsByTeamIds($teamIds)->groupBy('team_id');
 
-            
+
             $result = $this->matchEngine->simulateMatch(
                 $match->homeTeam,
                 $match->awayTeam,
@@ -105,35 +95,32 @@ class MatchService
                 $match->group_id
             );
 
-            
+
             $match->home_goals = $result['home_goals'];
             $match->away_goals = $result['away_goals'];
             $match->played = true;
             $match->save();
 
-            
+
             $this->processStatsInMemory($groupTeams, $match->group_id, $match->home_team_id, $result['home_goals'], $result['away_goals']);
             $this->processStatsInMemory($groupTeams, $match->group_id, $match->away_team_id, $result['away_goals'], $result['home_goals']);
 
-            
+
             $this->saveStats($groupTeams);
 
-            
+
             $remainingMatches = $this->fixtureRepository->countRemainingMatchesInWeek($currentWeek);
             $isLastMatch = $remainingMatches === 0;
 
             if ($isLastMatch) {
-                
-                
-                $allGroupTeams = \App\Models\GroupTeam::with('team')->get();
-                $groupedByGroup = $allGroupTeams->groupBy('group_id');
+                // Hafta bitti - sadece ilgili grubun tahminlerini güncelle
+                // Tüm grupları çekmek yerine sadece bu maçın grubunu al
+                $affectedGroupTeams = $this->groupRepository->getGroupTeamsByTeamIds(
+                    \App\Models\GroupTeam::where('group_id', $match->group_id)->pluck('team_id')->toArray()
+                )->groupBy('team_id');
 
-                foreach ($groupedByGroup as $groupId => $teams) {
-                    $this->predictionService->calculatePredictionsInMemory($teams, $groupId);
-                }
-
-                $allGroupTeamsGrouped = $allGroupTeams->groupBy('team_id');
-                $this->saveStats($allGroupTeamsGrouped);
+                $this->predictionService->calculatePredictionsInMemory($affectedGroupTeams, $match->group_id);
+                $this->saveStats($affectedGroupTeams);
             }
 
             return [
@@ -160,6 +147,19 @@ class MatchService
         while ($this->fixtureRepository->existsUnplayed()) {
             $results[] = $this->playNextWeek();
         }
+
+        // Tüm haftalar bitti - şimdi tüm gruplar için tahminleri hesapla
+        $allGroupTeams = \App\Models\GroupTeam::with('team')->get();
+        $groupedByGroup = $allGroupTeams->groupBy('group_id');
+
+        foreach ($groupedByGroup as $groupId => $teams) {
+            $this->predictionService->calculatePredictionsInMemory($teams, $groupId);
+        }
+
+        // Tahminleri kaydet
+        $allGroupTeamsGrouped = $allGroupTeams->groupBy('team_id');
+        $this->saveStats($allGroupTeamsGrouped);
+
         return $results;
     }
 
@@ -173,10 +173,10 @@ class MatchService
             $match->played = true;
             $match->save();
 
-            
+
             $this->groupRepository->resetGroupStats($match->group_id);
 
-            
+
             $playedMatches = $this->fixtureRepository->getPlayedMatchesByGroup($match->group_id);
             $groupTeams = $this->groupRepository->getGroupTeamsByTeamIds(
                 \App\Models\GroupTeam::where('group_id', $match->group_id)->pluck('team_id')->toArray()
@@ -217,7 +217,7 @@ class MatchService
         $upsertData = [];
         foreach ($groupTeams as $collection) {
             foreach ($collection as $gt) {
-                
+
                 $upsertData[] = $gt->attributesToArray();
             }
         }

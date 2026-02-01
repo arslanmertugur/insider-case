@@ -1,9 +1,8 @@
 
-
 export const ANIMATION_DELAYS = {
-    SIMULATION_START: 1500,
-    MATCH_REVEAL: 300,
-    SIMULATION_END: 2000,
+    SIMULATION_START: 300,    // 1500ms → 300ms (5x faster)
+    MATCH_REVEAL: 100,        // 300ms → 100ms (3x faster)
+    SIMULATION_END: 400,      // 2000ms → 400ms (5x faster)
     SUCCESS_TOAST: 1500,
 };
 
