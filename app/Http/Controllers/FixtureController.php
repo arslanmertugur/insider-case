@@ -142,7 +142,7 @@ class FixtureController extends Controller
     public function playAll(): JsonResponse
     {
         // Tüm sezon simülasyonu için zaman limiti artır
-        set_time_limit(120);
+        set_time_limit(240);
 
         $this->matchService->playAllWeeks();
 
